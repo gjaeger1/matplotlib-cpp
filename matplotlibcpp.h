@@ -2321,18 +2321,23 @@ struct plot_impl<std::false_type>
         using std::begin;
         using std::end;
 
+        detail::_interpreter::get();
+
         auto xs = distance(begin(x), end(x));
         auto ys = distance(begin(y), end(y));
         assert(xs == ys && "x and y data must have the same number of elements!");
 
-        PyObject* xlist = PyList_New(xs);
-        PyObject* ylist = PyList_New(ys);
+        PyObject* xlist = PyList_New(static_cast<Py_ssize_t>(xs));
+        PyObject* ylist = PyList_New(static_cast<Py_ssize_t>(ys));
         PyObject* pystring = PyString_FromString(format.c_str());
 
         auto itx = begin(x), ity = begin(y);
         for(size_t i = 0; i < xs; ++i) {
-            PyList_SetItem(xlist, i, PyFloat_FromDouble(*itx++));
-            PyList_SetItem(ylist, i, PyFloat_FromDouble(*ity++));
+            PyList_SetItem(xlist, i, PyFloat_FromDouble(*itx));
+            PyList_SetItem(ylist, i, PyFloat_FromDouble(*ity));
+
+            ++itx;
+            ++ity;
         }
 
         PyObject* plot_args = PyTuple_New(3);
@@ -2355,12 +2360,14 @@ struct plot_impl<std::true_type>
     template<typename Iterable, typename Callable>
     bool operator()(const Iterable& ticks, const Callable& f, const std::string& format)
     {
-        if(begin(ticks) == end(ticks)) return true;
+        using std::cbegin;
+        using std::cend;
+        if(cbegin(ticks) == cend(ticks)) return true;
 
         // We could use additional meta-programming to deduce the correct element type of y,
         // but all values have to be convertible to double anyways
         std::vector<double> y;
-        for(auto x : ticks) y.push_back(f(x));
+        for(auto x = cbegin(ticks); x != cend(ticks); ++x) y.push_back(f(*x));
         return plot_impl<std::false_type>()(ticks,y,format);
     }
 };
@@ -2375,6 +2382,12 @@ template<typename A, typename B, typename... Args>
 bool plot(const A& a, const B& b, const std::string& format, Args... args)
 {
     return detail::plot_impl<typename detail::is_callable<B>::type>()(a,b,format) && plot(args...);
+}
+
+template<typename A, typename B, typename... Args>
+bool plot_not_callable(const A& a, const B& b, const std::string& format, Args... args)
+{
+    return detail::plot_impl<std::false_type>()(a,b,format) && plot(args...);
 }
 
 /*

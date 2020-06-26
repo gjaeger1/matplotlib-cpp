@@ -1,0 +1,11 @@
+prefix=@MATPLOTLIB_CPP_DEST_DIR@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: matplotlib-cpp
+Description: Library for plotting in C++ using Python and Matplotlib
+Version: @MATPLOTLIB_CPP_VERSION@
+
+Libs: -L${libdir} @MATPLOTLIB_CPP_DEPS@
+Cflags: -I${includedir} @MATPLOTLIB_CPP_CFLAGS@
