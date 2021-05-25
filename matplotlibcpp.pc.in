@@ -7,5 +7,5 @@ Name: matplotlib-cpp
 Description: Library for plotting in C++ using Python and Matplotlib
 Version: @MATPLOTLIB_CPP_VERSION@
 
-Libs: -L${libdir} @MATPLOTLIB_CPP_DEPS@
-Cflags: -I${includedir} @MATPLOTLIB_CPP_CFLAGS@
+Libs: -L${libdir} @MATPLOTLIB_CPP_DEPS_STR@
+Cflags: -I${includedir} @MATPLOTLIB_CPP_CFLAGS_STR@
